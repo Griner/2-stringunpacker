@@ -18,9 +18,11 @@ func TestMain(t *testing.T) {
 		{"abcd", "abcd", false},
 		{`45`, ``, true},
 		{`4a5b`, `aaaaab`, false},
-		// {`qwe\4\5`, `qwe45`, false},
-		// {`qwe\45`, `qwe44444`, false},
-		// {`qwe\\5`, `qwe\\\\\`, false}, // ?
+		{`qwe\4\5`, `qwe45`, false},
+		{`qwe\45`, `qwe44444`, false},
+		{`qwe\\5`, `qwe\\\\\`, false},
+		{`\\4q`, `\\\\q`, false},
+		{`\55`, `55555`, false},
 	}
 
 	for _, testCase := range cases {
@@ -37,12 +39,12 @@ func TestMain(t *testing.T) {
 			t.Logf("OK\n")
 		} else {
 
-			for i:=0; i <len(out); i+=1 {
+			for i := 0; i < len(out); i++ {
 				fmt.Printf("%x ", out[i])
 			}
 			fmt.Println()
 
-			for i:=0; i <len(testCase.out); i+=1 {
+			for i := 0; i < len(testCase.out); i++ {
 				fmt.Printf("%x ", testCase.out[i])
 			}
 			fmt.Println()

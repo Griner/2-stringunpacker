@@ -35,18 +35,39 @@ func itoa(i rune) (int, error) {
 func UnpackString(packed string) (string, error) {
 
 	var symbolInfo struct {
-		s rune
-		c int
+		s      rune
+		c      int
+		escape bool
 	}
 	var unpacked strings.Builder
 
 	for _, symbol := range packed {
 
+		if symbol == '\\' && !symbolInfo.escape {
+			symbolInfo.escape = true
+
+			if symbolInfo.s != '\x00' {
+				if symbolInfo.c == 0 {
+					symbolInfo.c = 1
+				}
+				unpacked.WriteString(strings.Repeat(string(symbolInfo.s), symbolInfo.c))
+			}
+
+			continue
+		}
+
+		if symbolInfo.escape {
+			symbolInfo.s = symbol
+			symbolInfo.c = 0
+			symbolInfo.escape = false
+			continue
+		}
+
 		if i, err := itoa(symbol); err == nil {
 			symbolInfo.c = symbolInfo.c*10 + i
 		} else {
 			if symbolInfo.s != '\x00' {
-				if symbolInfo.c == 0{
+				if symbolInfo.c == 0 {
 					symbolInfo.c = 1
 				}
 				unpacked.WriteString(strings.Repeat(string(symbolInfo.s), symbolInfo.c))
@@ -58,14 +79,14 @@ func UnpackString(packed string) (string, error) {
 	}
 
 	if symbolInfo.s != '\x00' {
-		if symbolInfo.c == 0{
+		if symbolInfo.c == 0 {
 			symbolInfo.c = 1
 		}
 		unpacked.WriteString(strings.Repeat(string(symbolInfo.s), symbolInfo.c))
 	}
 
-	if (unpacked.String() == "") {
-		return "" , fmt.Errorf("Invalid string")
+	if unpacked.String() == "" {
+		return "", fmt.Errorf("Invalid string")
 	}
 
 	//log.Println(unpacked.String())
